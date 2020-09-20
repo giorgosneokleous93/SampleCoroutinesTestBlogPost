@@ -1,8 +1,7 @@
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers
@@ -18,7 +17,7 @@ class DemoTestCoroutineDispatcher {
     @Test
     fun `Advancing Time with TestCoroutineDispatcher`() = runBlockingTest {
         val delay = 100.milliseconds
-        val flow = operation(delay = delay, rounds = 5)
+        val flow = operationForTimeController(delay = delay, rounds = 5)
 
         // observing flow and storing emissions
         val results = mutableListOf<Int>()
@@ -40,7 +39,32 @@ class DemoTestCoroutineDispatcher {
         Assert.assertThat(results, CoreMatchers.equalTo(mutableListOf(0, 1, 2, 3, 4)))
     }
 
-    private fun operation(delay: Duration, rounds: Int): Flow<Int> {
+    @Test
+    fun `Pause and Resume Dispatcher with TestCoroutineDispatcher`() = runBlockingTest {
+        // pausing dispatcher
+        pauseDispatcher()
+
+        val stateFlow = operationForPausingAndResuming(this)
+
+        // assert that empty string before resuming
+        Assert.assertTrue(
+            "Expected empty string for state.flow but found: ${stateFlow.value}",
+            stateFlow.value.isEmpty()
+        )
+
+        // resuming operation
+        resumeDispatcher()
+
+        // assert that the new value matches the constant STATE_FLOW_EMISSION
+        Assert.assertThat(stateFlow.value, CoreMatchers.equalTo(STATE_FLOW_EMISSION))
+    }
+
+    /**
+     * A [Flow] which emits [rounds] integers value (from 0 to [rounds].
+     *
+     * Emits every at constant intervals depending on the value of [delay].
+     */
+    private fun operationForTimeController(delay: Duration, rounds: Int): Flow<Int> {
         return flow {
             repeat(rounds) {
                 delay(delay)
@@ -48,4 +72,19 @@ class DemoTestCoroutineDispatcher {
             }
         }
     }
+
+    /**
+     * A [StateFlow] which emits a string value.
+     */
+    private fun operationForPausingAndResuming(scope: CoroutineScope): StateFlow<String> {
+        val stateFlow = MutableStateFlow("")
+
+        scope.launch {
+            stateFlow.value = STATE_FLOW_EMISSION
+        }
+
+        return stateFlow
+    }
 }
+
+private const val STATE_FLOW_EMISSION = "StateFlowEmission"
