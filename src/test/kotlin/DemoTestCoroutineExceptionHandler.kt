@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestCoroutineExceptionHandler
 import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.withContext
 import org.hamcrest.CoreMatchers
 import org.junit.Assert
 import org.junit.Test
@@ -16,9 +15,7 @@ class DemoTestCoroutineExceptionHandler {
         // handler will catch Exceptions
         val exceptionHandler = TestCoroutineExceptionHandler()
 
-        launch(exceptionHandler) {
-            operation().collect()
-        }
+        launch(exceptionHandler) { operation().collect() }
 
         // asserting that first uncaught exception is CustomException
         Assert.assertThat(
@@ -27,9 +24,12 @@ class DemoTestCoroutineExceptionHandler {
         )
     }
 
+    /**
+     * A flow which throws a [CustomException]
+     */
     private fun operation() = flow<Unit> {
         throw CustomException()
     }
 
-    private class CustomException : Throwable("Custom Exception")
+    private class CustomException : Throwable("Operation failed..")
 }
