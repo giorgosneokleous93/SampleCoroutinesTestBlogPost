@@ -37,9 +37,9 @@ import kotlin.time.milliseconds
 
 @ExperimentalCoroutinesApi
 @ExperimentalTime
-class DemoTestCoroutineDispatcher {
+class DemoTestCoroutineScope {
     @Test
-    fun `Advancing Time with TestCoroutineDispatcher`() = runBlockingTest {
+    fun `Advancing Time with TestCoroutineScope`() = runBlockingTest {
         val delay = 100.milliseconds
         val flow = operationForTimeController(delay = delay, rounds = 5)
 
@@ -64,7 +64,8 @@ class DemoTestCoroutineDispatcher {
     }
 
     @Test
-    fun `Pause and Resume Dispatcher with TestCoroutineDispatcher`() = runBlockingTest {
+    fun `Pause and Resume Dispatcher with TestCoroutineScope`() = runBlockingTest {
+        ->
         // pausing dispatcher
         pauseDispatcher()
 
